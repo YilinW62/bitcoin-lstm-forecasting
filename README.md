@@ -28,8 +28,8 @@ How well can an LSTM use a window of historical daily Bitcoin prices to forecast
 | `src/visualize_data.py` | Exploratory plots and explicitly simulated illustrations |
 | `requirements.txt` | Direct Python dependencies |
 | `data/bitcoin_daily.xlsx` | Daily Bitcoin price dataset |
-| `docs/evaluation-notes.md` | Known limitations and improvement plan |
-| `reports/poster.pdf` | Original project poster |
+| `improvement-plan/evaluation-notes.md` | Known limitations and improvement plan |
+| `poster/poster.pdf` | Original project poster |
 
 ## Data
 
@@ -63,7 +63,7 @@ The standalone visualization script currently reads `Bitcoin_Historical_Data_10y
 
 ## Research materials
 
-[View the project poster](reports/poster.pdf): "Application of LSTMs to Bitcoin Price Prediction" by Yilin Wang.
+[View the project poster](poster/poster.pdf): "Application of LSTMs to Bitcoin Price Prediction" by Yilin Wang.
 
 ## Attribution
 
