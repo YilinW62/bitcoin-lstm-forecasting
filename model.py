@@ -1,6 +1,6 @@
 """
-比特币价格预测 - 多对多 (Seq2Seq) LSTM模型
-真正的时间序列预测模式
+Bitcoin price forecasting - multi-step (Seq2Seq) LSTM model
+Multi-step time-series forecasting
 """
 
 import torch
@@ -9,9 +9,9 @@ import torch.nn as nn
 
 class BitcoinLSTM_Seq2Seq(nn.Module):
     """
-    多对多LSTM模型 - 直接预测未来N天
-    输入: [batch, time_step, 1]
-    输出: [batch, pred_days, 1] ← 一次性输出多天预测
+    Multi-step LSTM model - Directly forecast the next N days
+    Input: [batch, time_step, 1]
+    Output: [batch, pred_days, 1]  output multi-day forecasts in one pass
     """
 
     def __init__(self,
@@ -22,11 +22,11 @@ class BitcoinLSTM_Seq2Seq(nn.Module):
                  pred_days=3):
         """
         Args:
-            input_size: 输入特征维度
-            hidden_size: LSTM隐藏层大小
-            num_layers: LSTM层数
-            dropout: Dropout比例
-            pred_days: 预测多少天（输出序列长度）
+            input_size: Input feature dimension
+            hidden_size: LSTM hidden size
+            num_layers: Number of LSTM layers
+            dropout: Dropout rate
+            pred_days: Forecast horizon in days (output sequence length)
         """
         super(BitcoinLSTM_Seq2Seq, self).__init__()
 
@@ -34,7 +34,7 @@ class BitcoinLSTM_Seq2Seq(nn.Module):
         self.num_layers = num_layers
         self.pred_days = pred_days
 
-        # Encoder LSTM（编码器）
+        # Encoder LSTM (encoder)
         self.encoder_lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
@@ -43,7 +43,7 @@ class BitcoinLSTM_Seq2Seq(nn.Module):
             batch_first=True
         )
 
-        # Decoder LSTM（解码器）
+        # Decoder LSTM (decoder)
         self.decoder_lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
@@ -55,54 +55,54 @@ class BitcoinLSTM_Seq2Seq(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(dropout)
 
-        # 输出层
+        # Output layer
         self.fc = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
         """
-        前向传播 - Seq2Seq架构
+        Forward pass - Seq2Seq architecture
 
         Args:
-            x: 输入张量 [batch_size, time_step, 1]
+            x: Input tensor [batch_size, time_step, 1]
 
         Returns:
             predictions: [batch_size, pred_days, 1]
         """
         batch_size = x.size(0)
 
-        # 1. Encoder: 处理输入序列
+        # 1. Encoder: Process the input sequence
         _, (hidden, cell) = self.encoder_lstm(x)
         # hidden: [num_layers, batch_size, hidden_size]
         # cell: [num_layers, batch_size, hidden_size]
 
-        # 2. Decoder: 生成预测序列
-        # 初始输入是最后一个时间步的值
+        # 2. Decoder: Generate the forecast sequence
+        # The initial input is the value at the last time step
         decoder_input = x[:, -1:, :]  # [batch_size, 1, 1]
 
         predictions = []
 
         for _ in range(self.pred_days):
-            # 解码一步
+            # Decode one step
             decoder_output, (hidden, cell) = self.decoder_lstm(
                 decoder_input, (hidden, cell)
             )
             # decoder_output: [batch_size, 1, hidden_size]
 
-            # 预测当前步
+            # Predict the current step
             pred = self.fc(decoder_output)  # [batch_size, 1, 1]
             predictions.append(pred)
 
-            # 下一步的输入是当前预测（训练时）或真实值（推理时）
+            # Feed the current prediction into the next decoder step
             decoder_input = pred
 
-        # 拼接所有预测
+        # Concatenate all predictions
         predictions = torch.cat(predictions, dim=1)  # [batch_size, pred_days, 1]
 
         return predictions
 
     def predict(self, x):
         """
-        预测模式（等同于forward，但更明确）
+        Prediction mode (equivalent to forward, with a more explicit name)
         """
         self.eval()
         with torch.no_grad():
@@ -111,9 +111,9 @@ class BitcoinLSTM_Seq2Seq(nn.Module):
 
 class BitcoinLSTM_Direct(nn.Module):
     """
-    直接多输出LSTM模型 - 更简单的多对多实现
-    输入: [batch, time_step, 1]
-    输出: [batch, pred_days] ← 直接输出N个值
+    Direct multi-output LSTM model - a simpler multi-step implementation
+    Input: [batch, time_step, 1]
+    Output: [batch, pred_days]  Directly output N values
     """
 
     def __init__(self,
@@ -124,18 +124,18 @@ class BitcoinLSTM_Direct(nn.Module):
                  pred_days=3):
         """
         Args:
-            input_size: 输入特征维度
-            hidden_size: LSTM隐藏层大小
-            num_layers: LSTM层数
-            dropout: Dropout比例
-            pred_days: 预测多少天
+            input_size: Input feature dimension
+            hidden_size: LSTM hidden size
+            num_layers: Number of LSTM layers
+            dropout: Dropout rate
+            pred_days: Forecast horizon in days
         """
         super(BitcoinLSTM_Direct, self).__init__()
 
         self.hidden_size = hidden_size
         self.pred_days = pred_days
 
-        # LSTM层
+        # LSTM layer
         self.lstm = nn.LSTM(
             input_size=input_size,
             hidden_size=hidden_size,
@@ -147,31 +147,31 @@ class BitcoinLSTM_Direct(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(dropout)
 
-        # 全连接层：直接输出pred_days个值
+        # Fully connected layer: Directly output pred_days values
         self.fc1 = nn.Linear(hidden_size, 50)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(50, pred_days)  # ← 输出层大小=预测天数
+        self.fc2 = nn.Linear(50, pred_days)  #  Output size = forecast horizon
 
     def forward(self, x):
         """
-        前向传播
+        Forward pass
 
         Args:
-            x: 输入张量 [batch_size, time_step, 1]
+            x: Input tensor [batch_size, time_step, 1]
 
         Returns:
             predictions: [batch_size, pred_days]
         """
-        # LSTM处理
+        # Process the sequence with the LSTM
         lstm_out, _ = self.lstm(x)
 
-        # 取最后一个时间步
+        # Take the last time step
         out = lstm_out[:, -1, :]  # [batch_size, hidden_size]
 
         # Dropout
         out = self.dropout(out)
 
-        # 全连接层
+        # Fully connected layer
         out = self.fc1(out)  # [batch_size, 50]
         out = self.relu(out)
         out = self.fc2(out)  # [batch_size, pred_days]
@@ -179,7 +179,7 @@ class BitcoinLSTM_Direct(nn.Module):
         return out
 
     def predict(self, x):
-        """预测模式"""
+        """Prediction mode"""
         self.eval()
         with torch.no_grad():
             predictions = self.forward(x)  # [batch_size, pred_days]
@@ -188,14 +188,14 @@ class BitcoinLSTM_Direct(nn.Module):
 
 def create_seq2seq_model(config, model_type='direct'):
     """
-    创建多对多模型
+    Create a multi-step forecasting model
 
     Args:
-        config: 配置对象
-        model_type: 'seq2seq' 或 'direct'
+        config: Configuration object
+        model_type: 'seq2seq' or 'direct'
 
     Returns:
-        PyTorch模型
+        PyTorch model
     """
     if model_type == 'seq2seq':
         model = BitcoinLSTM_Seq2Seq(
@@ -220,41 +220,41 @@ def create_seq2seq_model(config, model_type='direct'):
 
 
 def count_parameters(model):
-    """统计模型参数数量"""
+    """Count model parameters"""
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 if __name__ == "__main__":
-    # 测试模型
+    # Test the model
     from config import Config
 
     config = Config(TIME_STEP=60, PRED_DAYS=3)
 
     print("="*70)
-    print("测试Seq2Seq LSTM模型（编码器-解码器）")
+    print("Test Seq2Seq LSTM model (encoder-decoder)")
     print("="*70)
     model_seq2seq = create_seq2seq_model(config, model_type='seq2seq')
     print(model_seq2seq)
-    print(f"\n总参数数量: {count_parameters(model_seq2seq):,}")
+    print(f"\nTotal parameters: {count_parameters(model_seq2seq):,}")
 
-    # 测试前向传播
+    # Test the forward pass
     batch_size = 8
     x = torch.randn(batch_size, config.TIME_STEP, 1)
     output = model_seq2seq(x)
-    print(f"\n输入形状: {x.shape}")
-    print(f"输出形状: {output.shape}  ← 一次性输出{config.PRED_DAYS}天预测")
+    print(f"\nInput shape: {x.shape}")
+    print(f"Output shape: {output.shape}   {config.PRED_DAYS}-day forecast in one pass")
 
     print("\n" + "="*70)
-    print("测试Direct LSTM模型（直接多输出）")
+    print("Test Direct LSTM model (direct multi-output)")
     print("="*70)
     model_direct = create_seq2seq_model(config, model_type='direct')
     print(model_direct)
-    print(f"\n总参数数量: {count_parameters(model_direct):,}")
+    print(f"\nTotal parameters: {count_parameters(model_direct):,}")
 
     output = model_direct(x)
-    print(f"\n输入形状: {x.shape}")
-    print(f"输出形状: {output.shape}  ← 直接输出{config.PRED_DAYS}个值")
+    print(f"\nInput shape: {x.shape}")
+    print(f"Output shape: {output.shape}   Directly output {config.PRED_DAYS} values")
 
-    print("\n✓ 两种模型都是真正的多对多模式！")
-    print("  - Seq2Seq: 编码器-解码器架构，更适合长序列预测")
-    print("  - Direct: 直接输出N个值，实现更简单")
+    print("\nBoth models produce multi-step forecasts!")
+    print("  - Seq2Seq: encoder-decoder architecture, intended for longer forecast sequences")
+    print("  - Direct: Directly output N values, simpler implementation")

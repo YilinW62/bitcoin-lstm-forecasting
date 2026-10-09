@@ -63,7 +63,7 @@ python grid_search.py --help
 
 These instructions reflect the script interface; a full training run has not yet been verified in this repository. Dependency versions are not yet locked.
 
-The standalone visualization script currently reads `Bitcoin_Historical_Data_10年.xlsx` from the working directory. Update that path before using a differently named file.
+The standalone visualization script currently reads `Bitcoin_Historical_Data_10years.xlsx` from the working directory. Update that path before using a differently named file.
 
 ## Results and interpretation
 
@@ -89,3 +89,9 @@ The original poster covers Bitcoin data described as 2015–2025. A revised post
 ## Attribution
 
 This repository contains Yilin Wang's submitted project materials. Third-party data and diagrams retain their respective rights. No open-source license has been selected yet.
+
+## English-only source update
+
+All Python comments, docstrings, console messages, chart labels, and help text are in English; decorative emoji have been removed. The default Excel filename is now `Bitcoin_Historical_Data_10years.xlsx`. Rename a local input file accordingly, or pass its actual path with `--data_file` to the training and grid-search scripts. The visualization script uses the default filename directly.
+
+The exported `best_config.json` metadata keys are now `best_parameters`, `performance_metrics`, `search_duration`, and `search_date`. Numerical model and training logic are unchanged by this language update.

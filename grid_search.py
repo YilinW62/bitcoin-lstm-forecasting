@@ -1,6 +1,6 @@
 """
-比特币价格预测 - 网格搜索最佳参数
-自动尝试不同的参数组合，找到最优配置
+Bitcoin price forecasting - Grid search for model parameters
+Evaluate different parameter combinations automatically, select the best configuration
 """
 
 import argparse
@@ -26,7 +26,7 @@ plt.rcParams['axes.unicode_minus'] = False
 
 
 class Seq2SeqDataProcessor(DataProcessor):
-    """多对多模型的数据处理器"""
+    """Data processor for multi-step forecasting"""
 
     def create_sequences_seq2seq(self, data, time_step, pred_days):
         X, y = [], []
@@ -55,7 +55,7 @@ class Seq2SeqDataProcessor(DataProcessor):
 
 
 class GridSearchTrainer:
-    """网格搜索训练器"""
+    """Grid-search trainer"""
     
     def __init__(self, device='cuda'):
         if device == 'cuda':
@@ -63,10 +63,10 @@ class GridSearchTrainer:
         else:
             self.device = torch.device('cpu')
         
-        print(f"🖥️  使用设备: {self.device}")
+        print(f"Device: {self.device}")
     
     def train_model(self, model, train_loader, val_loader, config):
-        """训练单个模型"""
+        """Train a single model"""
         criterion = nn.MSELoss()
         optimizer = Adam(model.parameters(), lr=config.LEARNING_RATE)
         
@@ -74,7 +74,7 @@ class GridSearchTrainer:
         patience_counter = 0
         
         for epoch in range(config.EPOCHS):
-            # 训练
+            # Training
             model.train()
             train_loss = 0
             for X_batch, y_batch in train_loader:
@@ -92,7 +92,7 @@ class GridSearchTrainer:
             
             train_loss /= len(train_loader)
             
-            # 验证
+            # Validation
             model.eval()
             val_loss = 0
             with torch.no_grad():
@@ -107,7 +107,7 @@ class GridSearchTrainer:
             
             val_loss /= len(val_loader)
             
-            # 早停检查
+            # Check early stopping
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 patience_counter = 0
@@ -120,7 +120,7 @@ class GridSearchTrainer:
         return best_val_loss
     
     def evaluate(self, model, data_loader, data_processor, pred_days):
-        """评估模型"""
+        """Evaluate the model"""
         model.eval()
         all_predictions = []
         all_actuals = []
@@ -149,20 +149,20 @@ class GridSearchTrainer:
         return rmse, mae, r2
 
 
-def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', device='cuda'):
+def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10years.xlsx', device='cuda'):
     """
-    网格搜索主函数
+    Run the grid search
     
     Args:
-        param_grid: 参数网格字典
-        data_file: 数据文件路径
-        device: 运行设备
+        param_grid: Parameter grid dictionary
+        data_file: Data file path
+        device: Compute device
     """
     print("="*70)
-    print("🔍 比特币价格预测 - 网格搜索最佳参数")
+    print("Bitcoin price forecasting - Grid search for model parameters")
     print("="*70)
     
-    # 生成所有参数组合
+    # Generate all parameter combinations
     from itertools import product
     
     keys = list(param_grid.keys())
@@ -170,30 +170,30 @@ def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', devi
     combinations = list(product(*values))
     
     total_combinations = len(combinations)
-    print(f"\n📊 参数网格:")
+    print(f"\nParameter grid:")
     for key, vals in param_grid.items():
         print(f"  - {key}: {vals}")
-    print(f"\n总共需要尝试 {total_combinations} 种参数组合")
+    print(f"\nTotal combinations to evaluate: {total_combinations} parameter combinations")
     
-    # 存储结果
+    # Store results
     results = []
     
-    # 初始化训练器
+    # Initialize the trainer
     trainer = GridSearchTrainer(device=device)
     
-    # 遍历所有组合
+    # Iterate over all combinations
     for idx, combo in enumerate(combinations, 1):
         params = dict(zip(keys, combo))
         
         print(f"\n{'='*70}")
-        print(f"尝试组合 [{idx}/{total_combinations}]")
+        print(f"Trying combination [{idx}/{total_combinations}]")
         print(f"{'='*70}")
-        print("参数配置:")
+        print("Parameter configuration:")
         for key, val in params.items():
             print(f"  - {key}: {val}")
         
         try:
-            # 创建配置
+            # Create the configuration
             config = Config(
                 TIME_STEP=params['time_step'],
                 PRED_DAYS=params['pred_days'],
@@ -206,12 +206,12 @@ def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', devi
                 DATA_FILE=data_file
             )
             
-            # 数据处理
+            # Data processing
             data_processor = Seq2SeqDataProcessor(config)
             data_processor.load_data()
             X_train, y_train, X_test, y_test, test_data = data_processor.prepare_data_seq2seq()
             
-            # 划分验证集
+            # Split the validation set
             val_size = int(len(X_train) * config.VAL_SPLIT)
             X_val, y_val = X_train[-val_size:], y_train[-val_size:]
             X_train_split, y_train_split = X_train[:-val_size], y_train[:-val_size]
@@ -219,21 +219,21 @@ def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', devi
             train_loader, _ = data_processor.create_dataloaders(X_train_split, y_train_split, X_test, y_test)
             val_loader, test_loader = data_processor.create_dataloaders(X_val, y_val, X_test, y_test)
             
-            # 创建模型
+            # Create the model
             model = create_seq2seq_model(config, model_type='direct')
             model = model.to(trainer.device)
             
-            # 训练
-            print("\n🚀 开始训练...")
+            # Training
+            print("\nStart training...")
             val_loss = trainer.train_model(model, train_loader, val_loader, config)
             
-            # 评估
-            print("📊 评估模型...")
+            # Evaluation
+            print("Evaluate the model...")
             test_rmse, test_mae, test_r2 = trainer.evaluate(
                 model, test_loader, data_processor, config.PRED_DAYS
             )
             
-            # 记录结果
+            # Record results
             result = {
                 'idx': idx,
                 'params': params,
@@ -244,14 +244,14 @@ def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', devi
             }
             results.append(result)
             
-            print(f"\n✓ 完成！")
-            print(f"  - 验证损失: {val_loss:.6f}")
-            print(f"  - 测试RMSE: ${test_rmse:,.2f}")
-            print(f"  - 测试MAE:  ${test_mae:,.2f}")
-            print(f"  - 测试R²:   {test_r2:.4f}")
+            print(f"\nCompleted!")
+            print(f"  - Validation loss: {val_loss:.6f}")
+            print(f"  - Test RMSE: ${test_rmse:,.2f}")
+            print(f"  - Test MAE:  ${test_mae:,.2f}")
+            print(f"  - Test R²:   {test_r2:.4f}")
             
         except Exception as e:
-            print(f"\n❌ 错误: {str(e)}")
+            print(f"\nError: {str(e)}")
             result = {
                 'idx': idx,
                 'params': params,
@@ -263,8 +263,8 @@ def grid_search(param_grid, data_file='Bitcoin_Historical_Data_10年.xlsx', devi
 
 
 def save_results(results, save_path='grid_search_results.json'):
-    """保存网格搜索结果"""
-    # 转换为可序列化格式
+    """Save grid-search results"""
+    # Convert to serializable values
     results_serializable = []
     for r in results:
         if 'error' not in r:
@@ -286,52 +286,52 @@ def save_results(results, save_path='grid_search_results.json'):
     with open(save_path, 'w', encoding='utf-8') as f:
         json.dump(results_serializable, f, indent=2, ensure_ascii=False)
     
-    print(f"✓ 结果已保存: {save_path}")
+    print(f"Results saved: {save_path}")
 
 
 def analyze_results(results):
-    """分析结果并找到最佳参数"""
+    """Analyze results and select the best parameters"""
     print(f"\n{'='*70}")
-    print("📊 网格搜索结果分析")
+    print("Grid-search results analysis")
     print(f"{'='*70}")
     
-    # 过滤掉错误的结果
+    # Filter out failed runs
     valid_results = [r for r in results if 'error' not in r]
     
     if not valid_results:
-        print("❌ 没有成功的训练结果！")
+        print("No successful training results!")
         return None
     
-    print(f"\n成功完成: {len(valid_results)}/{len(results)} 个组合")
+    print(f"\nSuccessfully completed: {len(valid_results)}/{len(results)} combinations")
     
-    # 按不同指标排序
+    # Sort by different metrics
     by_r2 = sorted(valid_results, key=lambda x: x['test_r2'], reverse=True)
     by_rmse = sorted(valid_results, key=lambda x: x['test_rmse'])
     by_mae = sorted(valid_results, key=lambda x: x['test_mae'])
     
-    # 最佳R²
-    print(f"\n🏆 最佳R²模型 (R² = {by_r2[0]['test_r2']:.4f}):")
-    print("参数配置:")
+    # Best R²
+    print(f"\nBest R² model (R² = {by_r2[0]['test_r2']:.4f}):")
+    print("Parameter configuration:")
     for key, val in by_r2[0]['params'].items():
         print(f"  - {key}: {val}")
-    print(f"性能指标:")
+    print(f"Performance metrics:")
     print(f"  - RMSE: ${by_r2[0]['test_rmse']:,.2f}")
     print(f"  - MAE:  ${by_r2[0]['test_mae']:,.2f}")
     print(f"  - R²:   {by_r2[0]['test_r2']:.4f}")
     
-    # 最小RMSE
-    print(f"\n🎯 最小RMSE模型 (RMSE = ${by_rmse[0]['test_rmse']:,.2f}):")
-    print("参数配置:")
+    # Minimum RMSE
+    print(f"\nMinimum RMSE model (RMSE = ${by_rmse[0]['test_rmse']:,.2f}):")
+    print("Parameter configuration:")
     for key, val in by_rmse[0]['params'].items():
         print(f"  - {key}: {val}")
-    print(f"性能指标:")
+    print(f"Performance metrics:")
     print(f"  - RMSE: ${by_rmse[0]['test_rmse']:,.2f}")
     print(f"  - MAE:  ${by_rmse[0]['test_mae']:,.2f}")
     print(f"  - R²:   {by_rmse[0]['test_r2']:.4f}")
     
-    # Top 5结果
-    print(f"\n📋 Top 5 模型 (按R²排序):")
-    print(f"{'排名':<6} {'R²':<8} {'RMSE':<12} {'MAE':<12} {'参数'}")
+    # Top 5 results
+    print(f"\nTop 5 models (sorted by R²):")
+    print(f"{'Rank':<6} {'R²':<8} {'RMSE':<12} {'MAE':<12} {'Parameters'}")
     print("-" * 70)
     for i, r in enumerate(by_r2[:5], 1):
         param_str = f"TS={r['params']['time_step']}, LU={r['params']['lstm_units']}, LR={r['params']['learning_rate']}"
@@ -341,77 +341,77 @@ def analyze_results(results):
 
 
 def plot_grid_search_results(results, save_path='grid_search_visualization.png'):
-    """可视化网格搜索结果"""
+    """Visualize grid-search results"""
     valid_results = [r for r in results if 'error' not in r]
     
     if not valid_results:
-        print("❌ 没有可视化数据")
+        print("No data available for visualization")
         return
     
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     
-    # 提取数据
+    # Extract data
     indices = [r['idx'] for r in valid_results]
     r2_scores = [r['test_r2'] for r in valid_results]
     rmse_scores = [r['test_rmse'] for r in valid_results]
     mae_scores = [r['test_mae'] for r in valid_results]
     
-    # 1. R²分数
+    # 1. R² score
     axes[0, 0].bar(indices, r2_scores, color='steelblue', alpha=0.7)
-    axes[0, 0].axhline(y=max(r2_scores), color='red', linestyle='--', linewidth=2, label=f'最佳: {max(r2_scores):.4f}')
-    axes[0, 0].set_title('R² 分数对比', fontsize=14, fontweight='bold')
-    axes[0, 0].set_xlabel('参数组合编号', fontsize=12)
-    axes[0, 0].set_ylabel('R² 分数', fontsize=12)
+    axes[0, 0].axhline(y=max(r2_scores), color='red', linestyle='--', linewidth=2, label=f'Best: {max(r2_scores):.4f}')
+    axes[0, 0].set_title('R² score comparison', fontsize=14, fontweight='bold')
+    axes[0, 0].set_xlabel('Parameter combination index', fontsize=12)
+    axes[0, 0].set_ylabel('R² score', fontsize=12)
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3, axis='y')
     
     # 2. RMSE
     axes[0, 1].bar(indices, rmse_scores, color='coral', alpha=0.7)
-    axes[0, 1].axhline(y=min(rmse_scores), color='green', linestyle='--', linewidth=2, label=f'最佳: ${min(rmse_scores):,.0f}')
-    axes[0, 1].set_title('RMSE 对比', fontsize=14, fontweight='bold')
-    axes[0, 1].set_xlabel('参数组合编号', fontsize=12)
+    axes[0, 1].axhline(y=min(rmse_scores), color='green', linestyle='--', linewidth=2, label=f'Best: ${min(rmse_scores):,.0f}')
+    axes[0, 1].set_title('RMSE Comparison', fontsize=14, fontweight='bold')
+    axes[0, 1].set_xlabel('Parameter combination index', fontsize=12)
     axes[0, 1].set_ylabel('RMSE (USD)', fontsize=12)
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3, axis='y')
     
     # 3. MAE
     axes[1, 0].bar(indices, mae_scores, color='lightgreen', alpha=0.7)
-    axes[1, 0].axhline(y=min(mae_scores), color='darkgreen', linestyle='--', linewidth=2, label=f'最佳: ${min(mae_scores):,.0f}')
-    axes[1, 0].set_title('MAE 对比', fontsize=14, fontweight='bold')
-    axes[1, 0].set_xlabel('参数组合编号', fontsize=12)
+    axes[1, 0].axhline(y=min(mae_scores), color='darkgreen', linestyle='--', linewidth=2, label=f'Best: ${min(mae_scores):,.0f}')
+    axes[1, 0].set_title('MAE Comparison', fontsize=14, fontweight='bold')
+    axes[1, 0].set_xlabel('Parameter combination index', fontsize=12)
     axes[1, 0].set_ylabel('MAE (USD)', fontsize=12)
     axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.3, axis='y')
     
-    # 4. RMSE vs R²散点图
+    # 4. RMSE vs R² scatter plot
     axes[1, 1].scatter(r2_scores, rmse_scores, s=100, alpha=0.6, c=indices, cmap='viridis')
     best_idx = r2_scores.index(max(r2_scores))
     axes[1, 1].scatter([r2_scores[best_idx]], [rmse_scores[best_idx]], 
                        s=300, marker='*', color='red', edgecolors='black', linewidths=2, 
-                       label='最佳模型', zorder=5)
-    axes[1, 1].set_title('RMSE vs R² 关系', fontsize=14, fontweight='bold')
-    axes[1, 1].set_xlabel('R² 分数', fontsize=12)
+                       label='Best model', zorder=5)
+    axes[1, 1].set_title('RMSE vs R² Relationship', fontsize=14, fontweight='bold')
+    axes[1, 1].set_xlabel('R² score', fontsize=12)
     axes[1, 1].set_ylabel('RMSE (USD)', fontsize=12)
     axes[1, 1].legend()
     axes[1, 1].grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"✓ 可视化图表已保存: {save_path}")
+    print(f"Visualization saved: {save_path}")
     plt.close()
 
 
 def main():
-    parser = argparse.ArgumentParser(description='比特币价格预测 - 网格搜索')
+    parser = argparse.ArgumentParser(description='Bitcoin price forecasting - Grid search')
     parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'])
-    parser.add_argument('--data_file', type=str, default='Bitcoin_Historical_Data_10年.xlsx')
-    parser.add_argument('--quick', action='store_true', help='快速模式（较少的参数组合）')
+    parser.add_argument('--data_file', type=str, default='Bitcoin_Historical_Data_10years.xlsx')
+    parser.add_argument('--quick', action='store_true', help='Quick mode (fewer parameter combinations)')
     
     args = parser.parse_args()
     
-    # 定义参数网格
+    # Define the parameter grid
     if args.quick:
-        # 快速模式：较少的参数组合
+        # Quick mode: fewer parameter combinations
         param_grid = {
             'time_step': [30, 60],
             'pred_days': [3, 7],
@@ -420,7 +420,7 @@ def main():
             'epochs': [30]
         }
     else:
-        # 完整模式：更多参数组合
+        # Full mode: more parameter combinations
         param_grid = {
             'time_step': [30, 60, 90],
             'pred_days': [3, 7, 14],
@@ -430,50 +430,50 @@ def main():
             'epochs': [50]
         }
     
-    # 运行网格搜索
+    # Run the grid search
     start_time = datetime.now()
     results = grid_search(param_grid, data_file=args.data_file, device=args.device)
     end_time = datetime.now()
     
     print(f"\n{'='*70}")
-    print(f"⏱️  总耗时: {end_time - start_time}")
+    print(f"Total elapsed time: {end_time - start_time}")
     print(f"{'='*70}")
     
-    # 保存结果
+    # Save results
     save_results(results)
     
-    # 分析结果
+    # Analyze results
     best_model = analyze_results(results)
     
-    # 可视化
+    # Visualization
     plot_grid_search_results(results)
     
-    # 保存最佳参数配置
+    # Save the selected parameter configuration
     if best_model:
         best_config = {
-            '最佳参数配置': best_model['params'],
-            '性能指标': {
+            'best_parameters': best_model['params'],
+            'performance_metrics': {
                 'RMSE': float(best_model['test_rmse']),
                 'MAE': float(best_model['test_mae']),
                 'R²': float(best_model['test_r2'])
             },
-            '搜索时间': str(end_time - start_time),
-            '搜索日期': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'search_duration': str(end_time - start_time),
+            'search_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
         with open('best_config.json', 'w', encoding='utf-8') as f:
             json.dump(best_config, f, indent=2, ensure_ascii=False)
         
-        print(f"\n✓ 最佳配置已保存: best_config.json")
+        print(f"\nBest configuration saved: best_config.json")
         
-        # 打印运行命令
+        # Print the run command
         print(f"\n{'='*70}")
-        print("🚀 使用最佳参数训练模型的命令:")
+        print("Command to train with the selected parameters:")
         print(f"{'='*70}")
         params = best_model['params']
         cmd = f"python train.py --time_step {params['time_step']} --pred_days {params['pred_days']} --lstm_units {params['lstm_units']} --learning_rate {params['learning_rate']}"
         if 'dropout' in params:
-            # Note: 需要在train.py中添加dropout参数
+            # Note: Add a dropout argument to train.py to support this option.
             pass
         print(cmd)
         print(f"{'='*70}\n")
