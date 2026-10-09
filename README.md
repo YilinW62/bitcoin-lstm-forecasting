@@ -27,9 +27,13 @@ How well can an LSTM use a window of historical daily Bitcoin prices to forecast
 | `grid_search.py` | Original hyperparameter search |
 | `visualize_data.py` | Exploratory plots and explicitly simulated illustrations |
 | `requirements.txt` | Direct Python dependencies |
-| `data/README.md` | Data acquisition and placement instructions |
+| `data/bitcoin_daily.xlsx` | Daily Bitcoin price dataset |
 | `docs/evaluation-notes.md` | Known limitations and improvement plan |
 | `reports/poster.pdf` | Original project poster |
+
+## Data
+
+The included Excel dataset contains daily Bitcoin prices. The poster identifies Investing.com as the source. The input uses a `Date` column and a `Price` or `Close` column; prices can be numeric or comma-separated numeric text. Other columns are not model inputs.
 
 ## Setup and run
 
@@ -43,7 +47,7 @@ python -m pip install -r requirements.txt
 
 On Windows, activate with `.venv\Scripts\activate` instead.
 
-Obtain the input data as described in [data/README.md](data/README.md), then run from the repository root:
+Use the included [Bitcoin dataset](data/bitcoin_daily.xlsx) and run from the repository root:
 
 ```bash
 python train.py --data_file "data/bitcoin_daily.xlsx" --device cpu --time_step 60 --pred_days 3
