@@ -1,55 +1,53 @@
-# Known issues and improvement plan
+# Project reflection and improvement plan
 
-This document records issues found by inspecting the original source. It does not claim that they have already been corrected.
+This document summarizes the limitations I have identified in my Bitcoin LSTM forecasting project and the improvements I plan to make. These are areas for further work, rather than completed changes.
 
 ## Scaling leakage
 
-`DataProcessor.normalize_data()` fits MinMaxScaler on all prices before temporal splitting. Fit on the training period only, and transform validation/test data using that fitted scaler.
+My current implementation fits MinMaxScaler on all prices before splitting the data chronologically. This allows information from later periods to influence the scaling of training observations. I plan to fit the scaler on the training period only and use the same fitted scaler to transform validation and test data.
 
 ## Model selection
 
-`src/grid_search.py` ranks configurations using test metrics and uses test R² to recommend a configuration. Use validation metrics for selection, then evaluate the chosen configuration on held-out test data.
+In `src/grid_search.py`, I currently rank configurations using test metrics and recommend a configuration based on test R². I plan to use validation metrics for parameter selection and reserve the test set for the final evaluation.
 
 ## Overlapping forecast targets
 
-Both `src/train.py` and `src/grid_search.py` construct windows before splitting training and validation samples. Adjacent windows share target dates. Split by target dates or purge boundary-crossing targets so that a training label cannot also be a validation label.
+In `src/train.py` and `src/grid_search.py`, I create rolling windows before splitting training and validation samples. Adjacent windows can share target dates across the split. I plan to split by target dates or remove boundary-crossing samples so that training and validation targets remain separate.
 
 ## Checkpoint handling
 
-The grid-search trainer tracks the best validation loss but does not restore the corresponding weights. The main trainer restores its checkpoint in the early-stopping branch; normal completion also needs to restore the best checkpoint.
+My grid-search trainer records the best validation loss without restoring the corresponding model weights. In the main trainer, I restore the best checkpoint when early stopping occurs, but not when training finishes normally. I plan to restore the best validation checkpoint consistently before evaluation.
 
-## Baseline and horizons
+## Baseline and forecast horizons
 
-Add a persistence baseline that repeats the last observed price for every horizon. Evaluate both models on identical forecast origins, with separate day-1, day-2, and day-3 scores. Current pooled metrics flatten overlapping windows and horizons.
+My current evaluation pools predictions across overlapping windows and forecast horizons. I plan to report separate metrics for day 1, day 2, and day 3, and compare my LSTM against a persistence baseline that repeats the last observed price. I will evaluate both models using the same forecast origins.
 
-## Visualization and claims
+## Visualization and interpretation
 
-Some forecasts in `src/visualize_data.py` are simulated with trend extrapolation and random noise. They are illustrations, not trained-model outputs.
+Some forecasts in `src/visualize_data.py` use trend extrapolation and random noise. I need to distinguish these illustrations from predictions produced by my trained model.
 
-Direct multi-output prediction avoids recursive feedback of predicted prices; it does not eliminate forecast errors or establish superior performance.
+My direct multi-output approach avoids feeding predicted prices back into the model, but this alone does not establish better forecasting performance. I plan to assess its performance through comparative evaluation.
 
-The rolling standard deviation of price levels is not the same measure as return volatility. Label it accurately or calculate volatility from returns.
+I also need to distinguish the rolling standard deviation of price levels from return volatility. I plan to use the appropriate label or calculate volatility from returns.
 
 ## Reproducibility
 
-Seed randomness before model initialization, save run configurations and dependency versions, and validate date sorting, duplicates, missing days, and sequence alignment.
+I plan to set random seeds before model initialization and record the settings used for each experiment. I also need to check date ordering, duplicate dates, missing days, and the alignment of input sequences with their targets.
 
-## Poster and historical results
+## Poster and reported results
 
-The supplied poster describes Bitcoin data as 2015–2025 and reports R² = 0.9656 and RMSE approximately USD 3,751. These historical results have not been independently reproduced. Reconcile the reported dataset, architecture, hyperparameters, plots, and metrics with a recorded run before treating them as validated performance.
+My poster describes the dataset as covering 2015–2025 and reports R² = 0.9656 and RMSE of approximately USD 3,751. I still need to reproduce these results under the revised evaluation procedure and link each reported metric and figure to the corresponding dataset, architecture, and training parameters.
 
-Check that the poster conclusion and figures agree with the final experiment results.
-
-A high price-level R² alone does not establish performance against a last-price baseline, reliable return prediction, or a profitable trading strategy. Any such claim requires its own evaluation.
+I plan to update the poster's figures and conclusion to reflect the final experiment results. I also recognize that a high price-level R² alone does not demonstrate improvement over a last-price baseline, reliable return prediction, or trading profitability.
 
 ## Input validation and date integrity
 
-`DataProcessor.load_data()` decides whether to sort by comparing only the first and last dates. This can miss disorder within the file. Always sort by parsed date, validate monotonicity, and define a policy for duplicate dates and missing calendar days.
+My current date-sorting check compares only the first and last dates, which can miss disorder within the dataset. I plan to sort all observations by parsed date and define how to handle duplicate dates and missing calendar days.
 
-Date parsing errors are caught and execution continues; subsequent date operations can fail. Validate required columns, date parsing, numeric conversion, finite positive prices, and a nonempty cleaned dataset, with actionable error messages.
+The data-loading code currently catches date parsing errors and continues. I need to validate required columns, dates, numeric prices, and the cleaned dataset before training, and provide clear error messages for invalid inputs.
 
-Check that each partition has enough observations for the lookback and forecast horizon. Guard against zero validation samples: with `val_size = 0`, slicing with `[-0:]` and `[:-0]` produces an unintended full validation set and empty training set.
+I also need to check that each partition contains enough observations for the lookback window and forecast horizon. In particular, I plan to handle a zero-sized validation split explicitly, since slicing with `[-0:]` and `[:-0]` can produce a full validation set and an empty training set.
 
 ## Dataset documentation
 
-Record the dataset source URL, retrieval date, actual first and last dates, currency, price definition, missing observations, and cleaning choices so the experiment input can be identified and reproduced.
+I plan to document the dataset source URL, retrieval date, actual date range, currency, price definition, missing observations, and cleaning choices so that the input to my experiments can be identified and reproduced.
