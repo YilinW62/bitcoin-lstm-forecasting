@@ -20,12 +20,12 @@ How well can an LSTM use a window of historical daily Bitcoin prices to forecast
 
 | Path | Purpose |
 | --- | --- |
-| `train.py` | Training, evaluation, and multi-step forecasts |
-| `model.py` | LSTM architectures |
-| `data_processor.py` | Loading, cleaning, scaling, and sequence construction |
-| `config.py` | Configuration defaults |
-| `grid_search.py` | Original hyperparameter search |
-| `visualize_data.py` | Exploratory plots and explicitly simulated illustrations |
+| `src/train.py` | Training, evaluation, and multi-step forecasts |
+| `src/model.py` | LSTM architectures |
+| `src/data_processor.py` | Loading, cleaning, scaling, and sequence construction |
+| `src/config.py` | Configuration defaults |
+| `src/grid_search.py` | Original hyperparameter search |
+| `src/visualize_data.py` | Exploratory plots and explicitly simulated illustrations |
 | `requirements.txt` | Direct Python dependencies |
 | `data/bitcoin_daily.xlsx` | Daily Bitcoin price dataset |
 | `docs/evaluation-notes.md` | Known limitations and improvement plan |
@@ -50,13 +50,13 @@ On Windows, activate with `.venv\Scripts\activate` instead.
 Use the included [Bitcoin dataset](data/bitcoin_daily.xlsx) and run from the repository root:
 
 ```bash
-python train.py --data_file "data/bitcoin_daily.xlsx" --device cpu --time_step 60 --pred_days 3
+python src/train.py --data_file "data/bitcoin_daily.xlsx" --device cpu --time_step 60 --pred_days 3
 ```
 
 For available search options:
 
 ```bash
-python grid_search.py --help
+python src/grid_search.py --help
 ```
 
 The standalone visualization script currently reads `Bitcoin_Historical_Data_10years.xlsx` from the working directory. Update that path before using a differently named file.

@@ -8,11 +8,11 @@ This document records issues found by inspecting the original source. It does no
 
 ## Model selection
 
-`grid_search.py` ranks configurations using test metrics and uses test R² to recommend a configuration. Use validation metrics for selection, then evaluate the chosen configuration on held-out test data.
+`src/grid_search.py` ranks configurations using test metrics and uses test R² to recommend a configuration. Use validation metrics for selection, then evaluate the chosen configuration on held-out test data.
 
 ## Overlapping forecast targets
 
-Both `train.py` and `grid_search.py` construct windows before splitting training and validation samples. Adjacent windows share target dates. Split by target dates or purge boundary-crossing targets so that a training label cannot also be a validation label.
+Both `src/train.py` and `src/grid_search.py` construct windows before splitting training and validation samples. Adjacent windows share target dates. Split by target dates or purge boundary-crossing targets so that a training label cannot also be a validation label.
 
 ## Checkpoint handling
 
@@ -24,7 +24,7 @@ Add a persistence baseline that repeats the last observed price for every horizo
 
 ## Visualization and claims
 
-Some forecasts in `visualize_data.py` are simulated with trend extrapolation and random noise. They are illustrations, not trained-model outputs.
+Some forecasts in `src/visualize_data.py` are simulated with trend extrapolation and random noise. They are illustrations, not trained-model outputs.
 
 Direct multi-output prediction avoids recursive feedback of predicted prices; it does not eliminate forecast errors or establish superior performance.
 
@@ -56,11 +56,11 @@ Check that each partition has enough observations for the lookback and forecast 
 
 ## Configuration and command consistency
 
-Defaults in `config.py` and `train.py` differ; document and unify the intended experiment configuration. Command-line values currently take precedence in the training entry point.
+Defaults in `src/config.py` and `src/train.py` differ; document and unify the intended experiment configuration. Command-line values currently take precedence in the training entry point.
 
 The original dataset filename contains spaces and Chinese text; the scripts use `Bitcoin_Historical_Data_10years.xlsx`. README examples use an explicit `data/bitcoin_daily.xlsx` path. Standardize the input path across all entry points, including the visualization script.
 
-The grid-search recommendation command omits the dataset path, device, epochs, batch size, and dropout. `train.py` does not expose a dropout argument. Export a complete configuration and make it usable by the training entry point.
+The grid-search recommendation command omits the dataset path, device, epochs, batch size, and dropout. `src/train.py` does not expose a dropout argument. Export a complete configuration and make it usable by the training entry point.
 
 ## Dataset provenance and redistribution
 
@@ -91,4 +91,4 @@ The repository is currently private. For an RA application, arrange reviewer acc
 
 ## Documentation convention
 
-Keep issue descriptions, unverified-result qualifications, and improvement tasks in this document. The root README, data guide, describe the project, usage, and available materials.
+Keep issue descriptions, unverified-result qualifications, and improvement tasks in this document. The root README describes the project, usage, and available materials.
