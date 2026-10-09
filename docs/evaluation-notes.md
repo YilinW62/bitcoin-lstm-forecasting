@@ -64,11 +64,11 @@ The grid-search recommendation command omits the dataset path, device, epochs, b
 
 ## Dataset provenance and redistribution
 
-The dataset is not included in this repository. Redistribution terms have not been confirmed. Confirm permission before uploading it, and record the source URL, retrieval date, actual first and last dates, currency, price definition, missing observations, and cleaning choices.
+The supplied dataset is included as `data/bitcoin_daily.xlsx` in the private repository. Redistribution terms have not been confirmed; verify them before a public release. Record the source URL, retrieval date, actual first and last dates, currency, price definition, missing observations, and cleaning choices.
 
 ## Experiment artifacts and environment
 
-The repository contains source and the poster, but no recorded experiment outputs, trained checkpoints, or reproducibility manifest. After correcting evaluation, save authentic prediction figures, forecast dates, per-horizon metrics, baseline results, split boundaries, configuration, seed, and model/scaler artifacts where appropriate.
+The repository contains source, the supplied dataset, and the poster, but no recorded experiment outputs, trained checkpoints, or reproducibility manifest. After correcting evaluation, save authentic prediction figures, forecast dates, per-horizon metrics, baseline results, split boundaries, configuration, seed, and model/scaler artifacts where appropriate.
 
 `requirements.txt` lists dependencies without pinned versions. Record the Python version and lock a tested environment. A full dependency installation and end-to-end training run remain unverified.
 
@@ -91,4 +91,4 @@ The repository is currently private. For an RA application, arrange reviewer acc
 
 ## Documentation convention
 
-Keep issue descriptions, unverified-result qualifications, and improvement tasks in this document. The root README, data guide, and poster guide describe the project, usage, and available materials.
+Keep issue descriptions, unverified-result qualifications, and improvement tasks in this document. The root README, data guide, describe the project, usage, and available materials.

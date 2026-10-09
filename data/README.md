@@ -1,6 +1,8 @@
 # Data
 
-The project uses daily Bitcoin prices in Excel format. The poster identifies Investing.com as the data source.
+[Download the Bitcoin dataset](bitcoin_daily.xlsx).
+
+The project uses daily Bitcoin prices in Excel format. The poster identifies Investing.com as the data source. `bitcoin_daily.xlsx` is the supplied Excel file, renamed for use in this repository; its contents are unchanged.
 
 ## Expected input
 
@@ -8,9 +10,9 @@ The project uses daily Bitcoin prices in Excel format. The poster identifies Inv
 - `Price` or `Close`: daily price, numeric or comma-separated numeric text.
 - Other columns are not model inputs in the current implementation.
 
-## Placement and use
+## Usage
 
-Save the Excel dataset as `data/bitcoin_daily.xlsx` and run from the repository root:
+Run from the repository root:
 
 ```bash
 python train.py --data_file "data/bitcoin_daily.xlsx" --device cpu
