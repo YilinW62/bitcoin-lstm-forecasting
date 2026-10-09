@@ -34,15 +34,11 @@ The rolling standard deviation of price levels is not the same measure as return
 
 Seed randomness before model initialization, save run configurations and dependency versions, and validate date sorting, duplicates, missing days, and sequence alignment.
 
-## Validation performed for this import
-
-All six Python files passed AST syntax parsing. Training, dependency installation, and numerical performance were not tested.
-
 ## Poster and historical results
 
 The supplied poster describes Bitcoin data as 2015–2025 and reports R² = 0.9656 and RMSE approximately USD 3,751. These historical results have not been independently reproduced. Reconcile the reported dataset, architecture, hyperparameters, plots, and metrics with a recorded run before treating them as validated performance.
 
-Review the poster for remaining draft or placeholder text and complete its conclusion where needed. Do not infer these edits have been completed from the PDF upload.
+Check that the poster conclusion and figures agree with the final experiment results.
 
 A high price-level R² alone does not establish performance against a last-price baseline, reliable return prediction, or a profitable trading strategy. Any such claim requires its own evaluation.
 
@@ -62,9 +58,9 @@ The original dataset filename contains spaces and Chinese text; the scripts use 
 
 The grid-search recommendation command omits the dataset path, device, epochs, batch size, and dropout. `src/train.py` does not expose a dropout argument. Export a complete configuration and make it usable by the training entry point.
 
-## Dataset provenance and redistribution
+## Dataset documentation
 
-The supplied dataset is included as `data/bitcoin_daily.xlsx` in the private repository. Redistribution terms have not been confirmed; verify them before a public release. Record the source URL, retrieval date, actual first and last dates, currency, price definition, missing observations, and cleaning choices.
+Record the dataset source URL, retrieval date, actual first and last dates, currency, price definition, missing observations, and cleaning choices so the experiment input can be identified and reproduced.
 
 ## Experiment artifacts and environment
 
@@ -74,12 +70,6 @@ The repository contains source, the supplied dataset, and the poster, but no rec
 
 Add meaningful automated tests for training-only scaler fitting, chronological split boundaries, disjoint target dates, sequence shapes and date alignment, checkpoint restoration, and invalid or insufficient input data.
 
-## Attribution and release readiness
-
-No open-source license has been selected. Choose one for the original code if intended, and verify third-party data and diagram attribution separately.
-
-The repository is currently private. For an RA application, arrange reviewer access or make the repository public after reviewing what will be shared. Visibility changes are not part of this documentation update.
-
 ## Suggested implementation order
 
 1. Fix scaling, validation selection, and overlapping targets.
@@ -87,8 +77,5 @@ The repository is currently private. For an RA application, arrange reviewer acc
 3. Unify configuration, seed initialization, and dependency versions.
 4. Add the persistence baseline and per-horizon metrics, then rerun experiments.
 5. Save authentic results and update the poster to match the recorded run.
-6. Complete dataset provenance, attribution, license selection, and reviewer access.
+6. Complete the dataset documentation and experiment records.
 
-## Documentation convention
-
-Keep issue descriptions, unverified-result qualifications, and improvement tasks in this document. The root README describes the project, usage, and available materials.
