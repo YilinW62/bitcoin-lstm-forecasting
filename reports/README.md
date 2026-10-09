@@ -1,7 +1,11 @@
 # Poster
 
-The original poster is titled "Application of LSTMs to Bitcoin Price Prediction" and credits Yilin Wang.
+[View or download the original project poster](poster.pdf).
 
-A revised `poster.pdf` is planned. The supplied draft contains placeholder text, an incomplete conclusion, and results that need to be checked against a reproducible run. It has not been published here as a finished research artifact.
+The original poster is titled "Application of LSTMs to Bitcoin Price Prediction" and credits Yilin Wang. `poster.pdf` is the supplied `LSTM_poster.pdf`, preserved without changes.
 
-Keep the reported dataset, architecture, hyperparameters, evaluation method, and numerical results consistent with the code and recorded experiments.
+## Status and planned revisions
+
+This is the existing project poster. Its historical results have not been independently reproduced. The poster text, figures, and metrics still need to be reconciled with the exact run configuration and reproducible experiments. See [evaluation notes and improvement plan](../docs/evaluation-notes.md).
+
+Future revisions should keep the dataset, architecture, hyperparameters, evaluation method, and numerical results consistent with the code and recorded experiments.

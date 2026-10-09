@@ -35,6 +35,7 @@ The defaults in `config.py` differ from some defaults in `train.py`; command-lin
 | `requirements.txt` | Direct Python dependencies |
 | `data/README.md` | Data acquisition and placement instructions |
 | `docs/evaluation-notes.md` | Known limitations and improvement plan |
+| `reports/poster.pdf` | Original project poster |
 | `reports/README.md` | Poster status |
 
 ## Setup and run
@@ -84,7 +85,7 @@ No claim is made that this model outperforms a last-price baseline, forecasts re
 
 ## Research materials
 
-The original poster covers Bitcoin data described as 2015–2025. A revised poster will be added after correcting draft text and reconciling the reported results with reproducible experiments. See [reports/README.md](reports/README.md).
+The [original project poster](reports/poster.pdf) covers Bitcoin data described as 2015–2025 and is preserved as supplied. Its historical results have not been independently reproduced. Planned revisions will reconcile the poster text, figures, and reported results with reproducible experiments. See [reports/README.md](reports/README.md) and [evaluation notes](docs/evaluation-notes.md).
 
 ## Attribution
 
