@@ -1,6 +1,6 @@
 # Project issues and planned improvements
 
-This document records the current implementation and planned improvements for the project.
+This document records implementation issues and planned extensions. Baseline comparisons, horizon-specific reporting, experiment records, and dataset documentation are planned additions.
 
 ## Data scaling
 
@@ -50,7 +50,9 @@ This document records the current implementation and planned improvements for th
 
 ## Input validation and dates
 
-**Current implementation:** The sorting check compares the first and last dates. Date parsing exceptions are caught and execution continues. Validation samples are selected using a size calculated from the training sample count.
+**Existing cleaning:** `src/data_processor.py` renames `Price` to `Close` where needed, parses dates, removes commas from price strings, converts them to numeric values, drops missing closing prices, and removes nonpositive prices. It sorts all rows when the first date is later than the last date.
+
+**Additional checks:** The sorting condition does not check the order of intermediate rows. Duplicate dates and missing calendar days are not explicitly checked. Date parsing exceptions are caught and execution continues. Required columns, finite prices, empty cleaned data, and minimum partition sizes are not explicitly validated. Whether the supplied dataset contains these cases has not been checked.
 
 **Planned change:** Sort observations by parsed date; define handling for duplicate dates and missing calendar days; validate required columns, dates, numeric prices, and the cleaned dataset. Check partition sizes against the lookback and forecast horizon, and explicitly handle a zero-sized validation split.
 
