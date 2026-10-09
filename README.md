@@ -30,7 +30,6 @@ How well can an LSTM use a window of historical daily Bitcoin prices to forecast
 | `data/README.md` | Data acquisition and placement instructions |
 | `docs/evaluation-notes.md` | Known limitations and improvement plan |
 | `reports/poster.pdf` | Original project poster |
-| `reports/README.md` | Poster information |
 
 ## Setup and run
 
